@@ -1,0 +1,11 @@
+﻿  Main.cpp
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,15): warning C4101: 'translate': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,33): warning C4101: 'rotatex': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,109): warning C4101: 'backRightLeg': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,96): warning C4101: 'backLeftLeg': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,26): warning C4101: 'scale': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,81): warning C4101: 'frontRightLeg': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,67): warning C4101: 'frontLeftLeg': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,42): warning C4101: 'rotatey': unreferenced local variable
+D:\CMake\Projects\Assignment_02_classroom\Main.cpp(143,51): warning C4101: 'rotatez': unreferenced local variable
+  Assignment_02_classroom.vcxproj -> D:\CMake\Projects\Assignment_02_classroom\x64\Debug\Assignment_02_classroom.exe

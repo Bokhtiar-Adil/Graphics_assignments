@@ -1,0 +1,8 @@
+﻿  Main.cpp
+D:\CMake\Projects\Assignment_01_animal_shape\Main.cpp(98,18): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+D:\CMake\Projects\Assignment_01_animal_shape\Main.cpp(135,61): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+D:\CMake\Projects\Assignment_01_animal_shape\Main.cpp(139,64): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+D:\CMake\Projects\Assignment_01_animal_shape\Main.cpp(143,62): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+D:\CMake\Projects\Assignment_01_animal_shape\Main.cpp(147,61): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+D:\CMake\Projects\Assignment_01_animal_shape\Main.cpp(151,62): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+  Assignment_01_animal_shape.vcxproj -> D:\CMake\Projects\Assignment_01_animal_shape\x64\Debug\Assignment_01_animal_shape.exe
