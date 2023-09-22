@@ -11,17 +11,32 @@
 
 using namespace std;
 
-Camera camera(glm::vec3(0.4f, 0.4f, 2.8f));
+Camera camera(glm::vec3(0.6f, 0.4f, 2.8f));
 float deltaTime = 0.0f;	
 float lastFrame = 0.0f;
 
-int WIN_WIDTH = 1000;
-int WIN_HEIGHT = 800;
+// camera
+glm::vec3 cameraPos = glm::vec3(0.6f, 0.4f, 2.8f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+bool firstMouse = true;
+float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch = 0.0f;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0 / 2.0;
+float fov = 45.0f;
+
+int WIN_WIDTH = 1200;
+int WIN_HEIGHT = 1000;
 float TABLE_BASE_WIDTH = 0.6f;
 float TABLE_LEG_WIDTH = (float) (TABLE_BASE_WIDTH * 0.067);
+float TABLE_COLUMN_GAP = 1.0f;
+float TABLE_ROW_GAP = 1.2f;
 
 
 void frame_buffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void processInput(GLFWwindow* window);
 
 int main()
@@ -40,6 +55,7 @@ int main()
 
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 	// glad loading
 
@@ -102,7 +118,7 @@ int main()
 	// render
 
 	glm::mat4 identityMatrix = glm::mat4(1.0f);
-	glm::mat4 translate, rotate, scale, tableRowGap, tableColumnGap, legGapSepTable;
+	glm::mat4 translate, rotate, scale, tableRowGap, tableColumnGap, legGapSepTable, chair, gap;
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -120,12 +136,12 @@ int main()
 		
 		// tables
 		for (int i = 0; i < 4; i++) {
-			tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i*1.2f));
+			tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i*TABLE_ROW_GAP));
 			for (int j = 0; j < 4; j++) {
-				tableColumnGap = glm::translate(tableRowGap, glm::vec3(j * 0.8f, 0.0f, 0.0f));
+				tableColumnGap = glm::translate(tableRowGap, glm::vec3(j * TABLE_COLUMN_GAP, 0.0f, 0.0f));
 				glm::mat4 model = glm::mat4(1.0f); 				
 				//glm::mat4 view = glm::mat4(1.0f);
-				glm::mat4 view = camera.GetViewMatrix();
+				glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 				glm::mat4 projection = glm::mat4(1.0f);
 				model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 				model = tableColumnGap * model;
@@ -138,14 +154,27 @@ int main()
 				//glDrawArrays(GL_TRIANGLES, 0, 36);				
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // base
 
+				chair = identityMatrix * model;
+
 				shader.setVec3("color", 0.78f, 0.62f, 0.01f);
 				rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 				scale = glm::scale(identityMatrix, glm::vec3(0.067f, 1.0f, 0.067f));
-				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i*-1.2f, 0.0f));
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i*-TABLE_ROW_GAP, 0.0f));
 				model = translate * scale * rotate * model;
-				// scaling makes j*0.8 -> j*0.8*0.067 -> translate shifts it to pos j*0.8*0.067 + 0.8 -> this excess shift needs to be reversed
-				legGapSepTable = glm::translate(identityMatrix, glm::vec3(-0.8*j*0.067, 0.0f, 0.0f)); 				
+				// scaling makes j*TABLE_COLUMN_GAP -> j*TABLE_COLUMN_GAP*0.067 -> translate shifts it to pos j*TABLE_COLUMN_GAP*0.067 + TABLE_COLUMN_GAP -> this excess shift needs to be reversed
+				legGapSepTable = glm::translate(identityMatrix, glm::vec3(-TABLE_COLUMN_GAP*j*0.067, 0.0f, 0.0f)); 				
 				model = legGapSepTable * tableColumnGap * model;
+				shader.setMat4("model", model);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back left leg
+
+				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
+				model = translate * model;
+				shader.setMat4("model", model);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
+
+				translate = glm::translate(identityMatrix, glm::vec3(0, 0, -1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH)));
+				translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
+				model = translate * model;
 				shader.setMat4("model", model);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
 
@@ -154,21 +183,78 @@ int main()
 				shader.setMat4("model", model);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
 
-				translate = glm::translate(identityMatrix, glm::vec3(0, 0, -1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH)));
-				translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
-				model = translate * model;
-				shader.setMat4("model", model);
-				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back left leg
+				// chairs
 
-				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
-				model = translate * model;
-				shader.setMat4("model", model);
+				
+
+				rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));						
+				scale = glm::scale(identityMatrix, glm::vec3(0.6f, 0.6f, 0.267f));				
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i*TABLE_ROW_GAP*0.6f, 0.1f));							
+				//translate = glm::translate(identityMatrix, glm::vec3(0.0f, i * -TABLE_ROW_GAP, 0.0f));
+				chair = translate * scale * rotate * chair;				
+				gap = glm::translate(identityMatrix, glm::vec3(j*TABLE_COLUMN_GAP*0.4+TABLE_BASE_WIDTH*0.2, 0.0f, i*TABLE_ROW_GAP));
+				chair = gap * chair;
+				shader.setVec3("color", 1.0f, 1.0f, 0.0f);
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // chair back 
+
+				shader.setVec3("color", 0.4f, 0.29f, 0.004f);
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, -0.3f, 0.0f));
+				rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+				//scale = glm::scale(identityMatrix, glm::vec3(1.5f, 0.0f, 1.5f));
+				chair = rotate * translate * chair;
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i * TABLE_ROW_GAP, i * TABLE_ROW_GAP+0.1));
+				chair = translate * chair;
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // chair seat 
+
+				
+				rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+				scale = glm::scale(identityMatrix, glm::vec3(0.067f, 1.0f, 0.367f));
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, -1 * (i * TABLE_ROW_GAP) - 0.1, 0.1f));
+				chair = translate * scale * rotate * chair;
+				// scaling makes j*TABLE_COLUMN_GAP -> j*TABLE_COLUMN_GAP*0.067 -> translate shifts it to pos j*TABLE_COLUMN_GAP*0.067 + TABLE_COLUMN_GAP -> this excess shift needs to be reversed
+				legGapSepTable = glm::translate(identityMatrix, glm::vec3(-TABLE_COLUMN_GAP * j * 0.067, 0.0f, 0.0f));
+				chair = legGapSepTable * tableColumnGap * chair;
+				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH*0.2f, -0.16f, 0.0f));
+				chair = translate * chair;
+				scale = glm::scale(identityMatrix, glm::vec3(1.0f, 1.28f, 1.0f));
+				chair = scale * chair;
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back left leg
+				glm::mat4 fr = chair;
+
+				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH*0.6 - TABLE_LEG_WIDTH, 0, 0));
+				chair = translate * chair;
+				shader.setMat4("model", chair);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
+
+				/*translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH * 0.2f, 0, -1 * (TABLE_BASE_WIDTH*0.6 - TABLE_LEG_WIDTH*2.0f)));
+				translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
+				chair = translate * chair;*/
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1 * ( TABLE_BASE_WIDTH * 0.6 - TABLE_LEG_WIDTH)));
+				chair = translate * fr;
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
+
+				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH*0.6 - TABLE_LEG_WIDTH, 0, 0));
+				chair = translate * chair;
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right legchair
+
+				shader.setVec3("color", 0.2f, 0.18f, 0.02f);
+				scale = glm::scale(identityMatrix, glm::vec3(1.0f, 0.2f, 1.0f));
+				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH*0.2, 0.03f, -0.025f));
+				chair = translate * scale * fr;
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back-seat divider left
+
+				translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH * 0.15, 0.0f, 0.0f));
+				chair = translate * chair;
+				shader.setMat4("model", chair);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back-seat divider right
 			}
 		}
-
-		// chairs
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -192,14 +278,52 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	float cameraSpeed = static_cast<float>(2.5 * deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		camera.ProcessKeyboard(FORWARD, deltaTime);
+		cameraPos += cameraSpeed * cameraFront;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
+		cameraPos -= cameraSpeed * cameraFront;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		camera.ProcessKeyboard(LEFT, deltaTime);
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		camera.ProcessKeyboard(RIGHT, deltaTime);
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
+{
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+	lastX = xpos;
+	lastY = ypos;
+
+	float sensitivity = 0.1f; // change this value to your liking
+	xoffset *= sensitivity;
+	yoffset *= sensitivity;
+
+	yaw += xoffset;
+	pitch += yoffset;
+
+	// make sure that when pitch is out of bounds, screen doesn't get flipped
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	glm::vec3 front;
+	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	front.y = sin(glm::radians(pitch));
+	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(front);
 }
 
 
