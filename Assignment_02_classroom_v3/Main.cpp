@@ -28,7 +28,7 @@ float lastY = 600.0 / 2.0;
 float fov = 45.0f;
 
 int WIN_WIDTH = 1200;
-int WIN_HEIGHT = 1000;
+int WIN_HEIGHT = 800;
 float TABLE_BASE_WIDTH = 0.6f;
 float TABLE_LEG_WIDTH = (float) (TABLE_BASE_WIDTH * 0.067);
 float TABLE_COLUMN_GAP = 1.0f;
@@ -46,7 +46,7 @@ int main()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow* window = glfwCreateWindow(1000, 600, "Textures", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, "Assignment-02: Classroom", NULL, NULL);
 	if (window == NULL) {
 		cout << "Failed to load window\n";
 		glfwTerminate();
@@ -118,7 +118,7 @@ int main()
 	// render
 
 	glm::mat4 identityMatrix = glm::mat4(1.0f);
-	glm::mat4 translate, rotate, scale, tableRowGap, tableColumnGap, legGapSepTable, chair, gap;
+	glm::mat4 translate, rotate, scale, tableRowGap, tableColumnGap, legGapSepTable, gap, chair, locker, fan;
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -154,7 +154,9 @@ int main()
 				//glDrawArrays(GL_TRIANGLES, 0, 36);				
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // base
 
-				chair = identityMatrix * model;
+				chair = model;
+				if (i==0) locker = model;
+				if (i == 0 && j == 1) fan = model;
 
 				shader.setVec3("color", 0.78f, 0.62f, 0.01f);
 				rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -183,9 +185,8 @@ int main()
 				shader.setMat4("model", model);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
 
-				// chairs
 
-				
+				// chairs				
 
 				rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));						
 				scale = glm::scale(identityMatrix, glm::vec3(0.6f, 0.6f, 0.267f));				
@@ -253,7 +254,58 @@ int main()
 				chair = translate * chair;
 				shader.setMat4("model", chair);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back-seat divider right
-			}
+
+			}			
+		}
+
+		// locker
+		scale = glm::scale(identityMatrix, glm::vec3(1.2f, 20.0f, 2.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(TABLE_ROW_GAP+0.0f, -0.6f, 0.0f));
+		locker = translate * scale * locker;
+		shader.setVec3("color", 0.29f, 0.0f, 0.294f);
+		shader.setMat4("model", locker);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // locker
+
+
+		// fan
+		scale = glm::scale(identityMatrix, glm::vec3(0.2f, 1.0f, 0.2f));
+		translate = glm::translate(identityMatrix, glm::vec3(1.6f, 2.5f, 0.0f));
+		fan = translate * scale * fan;
+		//shader.setVec3("color", 0.0f, 0.0f, 0.4f);
+		shader.setVec3("color", 0.47f, 0.23f, 0.027f);
+		shader.setMat4("model", fan);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan center
+
+		scale = glm::scale(identityMatrix, glm::vec3(1.0f, 0.3f, 7.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 1.8f, 0.9f));
+		glm::mat4 arm = translate * scale * fan;
+		shader.setVec3("color", 0.0f, 0.0f, 0.4f);
+		shader.setMat4("model", arm);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
+		
+		scale = glm::scale(identityMatrix, glm::vec3(0.5f, 1.0f, 0.1f));
+		translate = glm::translate(identityMatrix, glm::vec3(0.925f, 0.005f, -0.005f));
+		glm::mat4 armc = translate * scale * arm;
+		shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+		shader.setMat4("model", armc);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
+
+		for (int i = 0; i < 3; i++) {
+			rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
+			//arm = translate * rotate * arm;
+			arm = rotate * arm;
+			shader.setVec3("color", 0.0f, 0.0f, 0.4f);
+			shader.setMat4("model", arm);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
+
+			rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
+			//armc = translate * rotate * armc;
+			armc = rotate * armc;
+			shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+			shader.setMat4("model", armc);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
 		}
 
 		glfwSwapBuffers(window);
