@@ -16,7 +16,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // camera
-glm::vec3 cameraPos = glm::vec3(0.6f, 0.4f, 2.8f);
+glm::vec3 cameraPos = glm::vec3(0.6f, 1.0f, 1.5f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -33,6 +33,8 @@ float TABLE_BASE_WIDTH = 0.6f;
 float TABLE_LEG_WIDTH = (float) (TABLE_BASE_WIDTH * 0.067);
 float TABLE_COLUMN_GAP = 1.0f;
 float TABLE_ROW_GAP = 1.2f;
+float FLOOR_TILES_WIDTH = TABLE_BASE_WIDTH * 1.2f;
+float FLOOR_TILES_GAP = 0.005f;
 
 
 void frame_buffer_size_callback(GLFWwindow* window, int width, int height);
@@ -118,7 +120,7 @@ int main()
 	// render
 
 	glm::mat4 identityMatrix = glm::mat4(1.0f);
-	glm::mat4 translate, rotate, scale, tableRowGap, tableColumnGap, legGapSepTable, gap, chair, locker, fan;
+	glm::mat4 translate, rotate, scale, tableRowGap, tableColumnGap, legGapSepTable, gap, chair, locker, teacher, fan, flr, walls, ceiling, tmpflr, board;
 
 	while (!glfwWindowShouldClose(window)) {
 
@@ -155,7 +157,11 @@ int main()
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // base
 
 				chair = model;
-				if (i==0) locker = model;
+				if (i == 0) {
+					locker = model;
+					teacher = model;
+				}
+				if (i == 0 && j == 0) flr = model;
 				if (i == 0 && j == 1) fan = model;
 
 				shader.setVec3("color", 0.78f, 0.62f, 0.01f);
@@ -258,6 +264,44 @@ int main()
 			}			
 		}
 
+		
+		
+		// teacher's table-chair
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_ROW_GAP *1.5f));
+		teacher = translate * teacher;
+		shader.setVec3("color", 1.0f, 0.0f, 0.0f);
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // teacher's table base
+
+		shader.setVec3("color", 0.78f, 0.62f, 0.01f);
+		rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		scale = glm::scale(identityMatrix, glm::vec3(0.067f, 1.0f, 0.067f));
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 1.0f * -TABLE_ROW_GAP, 0.0f));
+		teacher = translate * scale * rotate * teacher;		
+		tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_ROW_GAP * 1.5f));
+		tableColumnGap = glm::translate(tableRowGap, glm::vec3(3 * TABLE_COLUMN_GAP, 0.0f, 0.0f));
+		legGapSepTable = glm::translate(identityMatrix, glm::vec3(-TABLE_COLUMN_GAP * 0.7f * 0.067 - TABLE_LEG_WIDTH, 3.0f, -1.0f * TABLE_LEG_WIDTH));
+		teacher = legGapSepTable * tableColumnGap * teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back left leg
+
+		translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
+		teacher = translate * teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
+
+		translate = glm::translate(identityMatrix, glm::vec3(0, 0, -1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH)));
+		translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
+		teacher = translate * teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
+
+		translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
+		teacher = translate *teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
+
+		
 		// locker
 		scale = glm::scale(identityMatrix, glm::vec3(1.2f, 20.0f, 2.0f));
 		translate = glm::translate(identityMatrix, glm::vec3(TABLE_ROW_GAP+0.0f, -0.6f, 0.0f));
@@ -266,6 +310,138 @@ int main()
 		shader.setMat4("model", locker);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // locker
 
+		// floor
+		scale = glm::scale(identityMatrix, glm::vec3(1.2f, 0.1f, 1.2f));
+		translate = glm::translate(identityMatrix, glm::vec3(-3.0f * TABLE_BASE_WIDTH, -0.605f, -4.5f * TABLE_BASE_WIDTH));
+		flr = translate * scale * flr;
+		shader.setVec3("color", 0.698f, 0.698f, 0.698f);		
+		tmpflr = flr;
+		glm::mat4 tilesColumnTranslate;
+		glm::mat4 tilesRowTranslate; 
+		for (int i = 0; i < 11; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i * (FLOOR_TILES_WIDTH + FLOOR_TILES_GAP * 3.0f)));
+			tmpflr = tilesRowTranslate * flr;
+			for (int j = 0; j < 11; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(FLOOR_TILES_WIDTH + FLOOR_TILES_GAP, 0.0f, 0.0f));
+					tmpflr = tilesColumnTranslate * tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // floor
+			}
+		}
+		
+		// walls
+
+		rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(-0.6f * FLOOR_TILES_WIDTH, 1.6f * FLOOR_TILES_WIDTH, 0.0f));
+		flr = translate * rotate * flr;
+		shader.setVec3("color", 1.0f, 0.84f, 0.70f);
+		shader.setMat4("model", flr);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // left wall
+
+		// left wall
+		for (int i = 0; i < 12; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i * (FLOOR_TILES_WIDTH)));
+			tmpflr = tilesRowTranslate * flr;
+			for (int j = 0; j < 6; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, -1.0f * FLOOR_TILES_WIDTH, 0.0f));
+					tmpflr = tilesColumnTranslate * tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // left wall
+			}		
+		}
+
+		// right wall
+		translate = glm::translate(identityMatrix, glm::vec3(10.0f * (FLOOR_TILES_WIDTH) + 2.0f * FLOOR_TILES_GAP * 3.0f, 0.0f, 0.0f));
+		flr = translate * flr;
+		for (int i = 0; i < 12; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i * (FLOOR_TILES_WIDTH)));
+			tmpflr = tilesRowTranslate * flr;
+			for (int j = 0; j < 6; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, -1.0f * FLOOR_TILES_WIDTH, 0.0f));
+					tmpflr = tilesColumnTranslate * tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // left wall
+			}
+		}
+
+		// front wall
+		shader.setVec3("color", 0.925f, 0.91f, 0.84f);
+		rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(12.5f * (FLOOR_TILES_WIDTH), 0.0f, 4.0f * (FLOOR_TILES_WIDTH)));
+		flr = translate * rotate * flr;
+		board = flr;
+		for (int i = 0; i < 6; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, -1.0f * i * (FLOOR_TILES_WIDTH), 0.0f));
+			tmpflr = tilesRowTranslate * flr;
+			for (int j = 0; j < 12; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(-1.0f * FLOOR_TILES_WIDTH, 0.0f, 0.0f));
+					tmpflr = tilesColumnTranslate * tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // left wall
+			}
+		}
+
+		// back wall
+		shader.setVec3("color", 1.0f, 1.0f, 1.0f);		
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, 4.0f * (FLOOR_TILES_WIDTH) * 2.8f));
+		flr = translate * flr;
+		for (int i = 0; i < 6; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, -1.0f * i * (FLOOR_TILES_WIDTH), 0.0f));
+			tmpflr = tilesRowTranslate * flr;
+			for (int j = 0; j < 12; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(-1.0f * FLOOR_TILES_WIDTH, 0.0f, 0.0f));
+					tmpflr = tilesColumnTranslate * tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // left wall
+			}
+		}
+
+		// ceiling
+		shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+		rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(-7.0f, 7.5f, -3.0f * (FLOOR_TILES_WIDTH) * 2.8f));
+		flr = translate * rotate * flr;
+		for (int i = 0; i < 12; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i * (FLOOR_TILES_WIDTH)));
+			tmpflr = tilesRowTranslate * flr;
+			for (int j = 0; j < 11; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(FLOOR_TILES_WIDTH, 0.0f, 0.0f));
+					tmpflr = tilesColumnTranslate * tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // floor
+			}
+		}
+
+		// board
+		shader.setVec3("color", 0.0f, 0.0f, 0.0f);
+		translate = glm::translate(identityMatrix, glm::vec3(-7.0f * FLOOR_TILES_WIDTH, -2.0f * FLOOR_TILES_WIDTH, 0.05f));
+		board = translate * board;
+		shader.setMat4("model", board);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // board
+		for (int i = 0; i < 2; i++) {
+			tilesRowTranslate = glm::translate(identityMatrix, glm::vec3(0.0f, -1.0f * i * (FLOOR_TILES_WIDTH), 0.0f));
+			tmpflr = tilesRowTranslate * board;
+			for (int j = 0; j < 5; j++) {
+				if (j > 0) {
+					tilesColumnTranslate = glm::translate(identityMatrix, glm::vec3(FLOOR_TILES_WIDTH, 0.0f, 0.0f));
+					tmpflr = tilesColumnTranslate *tmpflr;
+				}
+				shader.setMat4("model", tmpflr);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // floor
+			}
+		}
 
 		// fan
 		scale = glm::scale(identityMatrix, glm::vec3(0.2f, 1.0f, 0.2f));
@@ -289,24 +465,25 @@ int main()
 		shader.setVec3("color", 1.0f, 1.0f, 1.0f);
 		shader.setMat4("model", armc);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
+		glm::mat4 tmp;
+		//for (int i = 1; i <= 3; i++) {
+		//	rotate = glm::rotate(identityMatrix, glm::radians(i*90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//	
+		//	//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
+		//	//arm = translate * rotate * arm;
+		//	tmp = rotate * arm;
+		//	shader.setVec3("color", 0.0f, 0.0f, 0.4f);
+		//	shader.setMat4("model", tmp);
+		//	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
 
-		for (int i = 0; i < 3; i++) {
-			rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
-			//arm = translate * rotate * arm;
-			arm = rotate * arm;
-			shader.setVec3("color", 0.0f, 0.0f, 0.4f);
-			shader.setMat4("model", arm);
-			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
-
-			rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
-			//armc = translate * rotate * armc;
-			armc = rotate * armc;
-			shader.setVec3("color", 1.0f, 1.0f, 1.0f);
-			shader.setMat4("model", armc);
-			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
-		}
+		//	rotate = glm::rotate(identityMatrix, glm::radians(i*90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//	//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
+		//	//armc = translate * rotate * armc;
+		//	tmp = rotate * armc;
+		//	shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+		//	shader.setMat4("model", tmp);
+		//	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
+		//}
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
