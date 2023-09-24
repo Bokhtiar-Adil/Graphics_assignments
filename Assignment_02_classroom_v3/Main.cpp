@@ -15,10 +15,10 @@ Camera camera(glm::vec3(0.6f, 1.0f, 1.5f));
 float deltaTime = 0.0f;	
 float lastFrame = 0.0f;
 
-// camera
-glm::vec3 cameraPos = glm::vec3(0.6f, 1.0f, 1.5f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+//// camera
+//glm::vec3 cameraPos = glm::vec3(0.6f, 1.0f, 1.5f);
+//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 bool firstMouse = true;
 float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
@@ -35,7 +35,6 @@ float TABLE_COLUMN_GAP = 1.0f;
 float TABLE_ROW_GAP = 1.2f;
 float FLOOR_TILES_WIDTH = TABLE_BASE_WIDTH * 1.2f;
 float FLOOR_TILES_GAP = 0.005f;
-
 
 void frame_buffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -57,7 +56,7 @@ int main()
 
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
-	//glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 	// glad loading
 
@@ -143,7 +142,7 @@ int main()
 				tableColumnGap = glm::translate(tableRowGap, glm::vec3(j * TABLE_COLUMN_GAP, 0.0f, 0.0f));
 				glm::mat4 model = glm::mat4(1.0f); 				
 				//glm::mat4 view = glm::mat4(1.0f);
-				//glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+				//glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);				
 				glm::mat4 view = camera.GetViewMatrix();
 				glm::mat4 projection = glm::mat4(1.0f);
 				model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
@@ -264,8 +263,6 @@ int main()
 
 			}			
 		}
-
-		
 		
 		// teacher's table-chair
 		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_ROW_GAP *1.5f));
@@ -521,6 +518,16 @@ void processInput(GLFWwindow* window)
 		camera.ProcessKeyboard(UP, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
 		camera.ProcessKeyboard(DOWN, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {		
+		camera.RotateAroundAxis(1, 5.0f);
+	}
+	if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {		
+		camera.RotateAroundAxis(2, 5.0f);
+	}
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {		
+		camera.RotateAroundAxis(3, 3.0f);
+	}
+
 
 }
 
@@ -541,7 +548,8 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	lastX = xpos;
 	lastY = ypos;
 
-	camera.ProcessMouseMovement(xoffset, yoffset);
+	//cout << "pitch and yaw :: sending to class method :: " << xoffset << " " << yoffset << "\n";
+	//camera.ProcessMouseMovement(xoffset, yoffset);
 
 	//float sensitivity = 0.1f; // change this value to your liking
 	//xoffset *= sensitivity;
