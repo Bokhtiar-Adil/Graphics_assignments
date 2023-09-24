@@ -11,7 +11,7 @@
 
 using namespace std;
 
-Camera camera(glm::vec3(0.6f, 0.4f, 2.8f));
+Camera camera(glm::vec3(0.6f, 1.0f, 1.5f));
 float deltaTime = 0.0f;	
 float lastFrame = 0.0f;
 
@@ -57,7 +57,7 @@ int main()
 
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, frame_buffer_size_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
+	//glfwSetCursorPosCallback(window, mouse_callback);
 
 	// glad loading
 
@@ -143,7 +143,8 @@ int main()
 				tableColumnGap = glm::translate(tableRowGap, glm::vec3(j * TABLE_COLUMN_GAP, 0.0f, 0.0f));
 				glm::mat4 model = glm::mat4(1.0f); 				
 				//glm::mat4 view = glm::mat4(1.0f);
-				glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+				//glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+				glm::mat4 view = camera.GetViewMatrix();
 				glm::mat4 projection = glm::mat4(1.0f);
 				model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 				model = tableColumnGap * model;
@@ -273,33 +274,33 @@ int main()
 		shader.setMat4("model", teacher);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // teacher's table base
 
-		shader.setVec3("color", 0.78f, 0.62f, 0.01f);
-		rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		scale = glm::scale(identityMatrix, glm::vec3(0.067f, 1.0f, 0.067f));
-		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 1.0f * -TABLE_ROW_GAP, 0.0f));
-		teacher = translate * scale * rotate * teacher;		
-		tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_ROW_GAP * 1.5f));
-		tableColumnGap = glm::translate(tableRowGap, glm::vec3(3 * TABLE_COLUMN_GAP, 0.0f, 0.0f));
-		legGapSepTable = glm::translate(identityMatrix, glm::vec3(-TABLE_COLUMN_GAP * 0.7f * 0.067 - TABLE_LEG_WIDTH, 3.0f, -1.0f * TABLE_LEG_WIDTH));
-		teacher = legGapSepTable * tableColumnGap * teacher;
-		shader.setMat4("model", teacher);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back left leg
-
-		translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
-		teacher = translate * teacher;
-		shader.setMat4("model", teacher);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
-
-		translate = glm::translate(identityMatrix, glm::vec3(0, 0, -1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH)));
-		translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
-		teacher = translate * teacher;
-		shader.setMat4("model", teacher);
+		shader.setVec3("color", 0.78f, 0.62f, 0.01f); 
+		rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
+		scale = glm::scale(identityMatrix, glm::vec3(0.067f, 1.0f, 0.067f)); 
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 1.0f * -TABLE_ROW_GAP, 0.0f));  
+		teacher = translate * scale * rotate * teacher;		 
+		tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_ROW_GAP * 1.5f)); 
+		tableColumnGap = glm::translate(tableRowGap, glm::vec3(3 * TABLE_COLUMN_GAP, 0.0f, 0.0f)); 
+		legGapSepTable = glm::translate(identityMatrix, glm::vec3(-TABLE_COLUMN_GAP * 0.05f - TABLE_LEG_WIDTH, 3.0f, 0.0f)); 
+		teacher = legGapSepTable * tableColumnGap * teacher; 
+		shader.setMat4("model", teacher); 
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
 
-		translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
-		teacher = translate *teacher;
-		shader.setMat4("model", teacher);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
+		//translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
+		//teacher = translate * teacher;
+		//shader.setMat4("model", teacher);
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
+
+		//translate = glm::translate(identityMatrix, glm::vec3(0, 0, -1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH)));
+		//translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
+		//teacher = translate * teacher;
+		//shader.setMat4("model", teacher);
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
+
+		//translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
+		//teacher = translate *teacher;
+		//shader.setMat4("model", teacher);
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
 
 		
 		// locker
@@ -509,13 +510,18 @@ void processInput(GLFWwindow* window)
 
 	float cameraSpeed = static_cast<float>(2.5 * deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(RIGHT, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+		camera.ProcessKeyboard(UP, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+		camera.ProcessKeyboard(DOWN, deltaTime);
+
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
@@ -535,24 +541,27 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	lastX = xpos;
 	lastY = ypos;
 
-	float sensitivity = 0.1f; // change this value to your liking
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
+	camera.ProcessMouseMovement(xoffset, yoffset);
 
-	yaw += xoffset;
-	pitch += yoffset;
+	//float sensitivity = 0.1f; // change this value to your liking
+	//xoffset *= sensitivity;
+	//yoffset *= sensitivity;
 
-	// make sure that when pitch is out of bounds, screen doesn't get flipped
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
+	//yaw += xoffset;
+	//pitch += yoffset;
 
-	glm::vec3 front;
-	front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	front.y = sin(glm::radians(pitch));
-	front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(front);
+	//// make sure that when pitch is out of bounds, screen doesn't get flipped
+	//if (pitch > 89.0f)
+	//	pitch = 89.0f;
+	//if (pitch < -89.0f)
+	//	pitch = -89.0f;
+
+	//glm::vec3 front;
+	//front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	//front.y = sin(glm::radians(pitch));
+	//front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	//cameraFront = glm::normalize(front);
+	/*return;*/
 }
 
 
