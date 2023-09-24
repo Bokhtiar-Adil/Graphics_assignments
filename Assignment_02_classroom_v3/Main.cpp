@@ -11,17 +11,12 @@
 
 using namespace std;
 
-Camera camera(glm::vec3(0.6f, 1.0f, 1.5f));
+Camera camera(glm::vec3(2.3f, 0.95f, 4.0f));
 float deltaTime = 0.0f;	
 float lastFrame = 0.0f;
 
-//// camera
-//glm::vec3 cameraPos = glm::vec3(0.6f, 1.0f, 1.5f);
-//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
 bool firstMouse = true;
-float yaw = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float yaw = -90.0f;	
 float pitch = 0.0f;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
@@ -140,20 +135,16 @@ int main()
 			tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, i*TABLE_ROW_GAP));
 			for (int j = 0; j < 4; j++) {
 				tableColumnGap = glm::translate(tableRowGap, glm::vec3(j * TABLE_COLUMN_GAP, 0.0f, 0.0f));
-				glm::mat4 model = glm::mat4(1.0f); 				
-				//glm::mat4 view = glm::mat4(1.0f);
-				//glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);				
+				glm::mat4 model = glm::mat4(1.0f); 											
 				glm::mat4 view = camera.GetViewMatrix();
 				glm::mat4 projection = glm::mat4(1.0f);
 				model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-				model = tableColumnGap * model;
-				view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+				model = tableColumnGap * model;				
 				projection = glm::perspective(glm::radians(camera.Zoom), (float)WIN_WIDTH / (float)WIN_HEIGHT, 0.1f, 100.0f);
 				shader.setMat4("view", view);
 				shader.setMat4("projection", projection);
 				shader.setMat4("model", model);
-				shader.setVec3("color", 1.0f, 0.0f, 0.0f);
-				//glDrawArrays(GL_TRIANGLES, 0, 36);				
+				shader.setVec3("color", 1.0f, 0.0f, 0.0f);							
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // base
 
 				chair = model;
@@ -196,8 +187,7 @@ int main()
 
 				rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));						
 				scale = glm::scale(identityMatrix, glm::vec3(0.6f, 0.6f, 0.267f));				
-				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i*TABLE_ROW_GAP*0.6f, 0.1f));							
-				//translate = glm::translate(identityMatrix, glm::vec3(0.0f, i * -TABLE_ROW_GAP, 0.0f));
+				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i*TABLE_ROW_GAP*0.6f, 0.1f));					
 				chair = translate * scale * rotate * chair;				
 				gap = glm::translate(identityMatrix, glm::vec3(j*TABLE_COLUMN_GAP*0.4+TABLE_BASE_WIDTH*0.2, 0.0f, i*TABLE_ROW_GAP));
 				chair = gap * chair;
@@ -207,8 +197,7 @@ int main()
 
 				shader.setVec3("color", 0.4f, 0.29f, 0.004f);
 				translate = glm::translate(identityMatrix, glm::vec3(0.0f, -0.3f, 0.0f));
-				rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-				//scale = glm::scale(identityMatrix, glm::vec3(1.5f, 0.0f, 1.5f));
+				rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));				
 				chair = rotate * translate * chair;
 				translate = glm::translate(identityMatrix, glm::vec3(0.0f, i * TABLE_ROW_GAP, i * TABLE_ROW_GAP+0.1));
 				chair = translate * chair;
@@ -235,10 +224,7 @@ int main()
 				chair = translate * chair;
 				shader.setMat4("model", chair);
 				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
-
-				/*translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH * 0.2f, 0, -1 * (TABLE_BASE_WIDTH*0.6 - TABLE_LEG_WIDTH*2.0f)));
-				translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
-				chair = translate * chair;*/
+				
 				translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1 * ( TABLE_BASE_WIDTH * 0.6 - TABLE_LEG_WIDTH)));
 				chair = translate * fr;
 				shader.setMat4("model", chair);
@@ -274,7 +260,7 @@ int main()
 		shader.setVec3("color", 0.78f, 0.62f, 0.01f); 
 		rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f)); 
 		scale = glm::scale(identityMatrix, glm::vec3(0.067f, 1.0f, 0.067f)); 
-		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 1.0f * -TABLE_ROW_GAP, 0.0f));  
+		translate = glm::translate(identityMatrix, glm::vec3(-0.12f, -1.2f, 0.0f));  
 		teacher = translate * scale * rotate * teacher;		 
 		tableRowGap = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_ROW_GAP * 1.5f)); 
 		tableColumnGap = glm::translate(tableRowGap, glm::vec3(3 * TABLE_COLUMN_GAP, 0.0f, 0.0f)); 
@@ -283,21 +269,20 @@ int main()
 		shader.setMat4("model", teacher); 
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
 
-		//translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
-		//teacher = translate * teacher;
-		//shader.setMat4("model", teacher);
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
+		translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH-0.04f, 0.0f, 0.0f));
+		teacher = translate * teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
 
-		//translate = glm::translate(identityMatrix, glm::vec3(0, 0, -1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH)));
-		//translate = glm::translate(translate, glm::vec3(-1 * (TABLE_BASE_WIDTH - TABLE_LEG_WIDTH), 0, 0));
-		//teacher = translate * teacher;
-		//shader.setMat4("model", teacher);
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front left leg
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.0f * TABLE_BASE_WIDTH + 0.04f));
+		teacher = translate * teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
 
-		//translate = glm::translate(identityMatrix, glm::vec3(TABLE_BASE_WIDTH - TABLE_LEG_WIDTH, 0, 0));
-		//teacher = translate *teacher;
-		//shader.setMat4("model", teacher);
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // front right leg
+		translate = glm::translate(identityMatrix, glm::vec3(-1.0f * TABLE_BASE_WIDTH + 0.04f, 0.0f, 0.0f));
+		teacher = translate * teacher;
+		shader.setMat4("model", teacher);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // back right leg
 
 		
 		// locker
@@ -444,10 +429,16 @@ int main()
 		// fan
 		scale = glm::scale(identityMatrix, glm::vec3(0.2f, 1.0f, 0.2f));
 		translate = glm::translate(identityMatrix, glm::vec3(1.6f, 2.5f, 0.0f));
-		fan = translate * scale * fan;
-		//shader.setVec3("color", 0.0f, 0.0f, 0.4f);
+		fan = translate * scale * fan;		
 		shader.setVec3("color", 0.47f, 0.23f, 0.027f);
 		shader.setMat4("model", fan);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan center
+
+		scale = glm::scale(identityMatrix, glm::vec3(1.2f, 1.4f, 1.2f));
+		translate = glm::translate(identityMatrix, glm::vec3(-0.37f, -0.9f, 0.0f));
+		glm::mat4 fan2 = translate * scale * fan;
+		shader.setVec3("color", 1.0f, 0.9f, 0.9f);
+		shader.setMat4("model", fan2);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan center
 
 		scale = glm::scale(identityMatrix, glm::vec3(1.0f, 0.3f, 7.0f));
@@ -456,6 +447,12 @@ int main()
 		shader.setVec3("color", 0.0f, 0.0f, 0.4f);
 		shader.setMat4("model", arm);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
+
+		glm::mat4 tmp;
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -1.05f));
+		tmp = translate * arm;
+		shader.setMat4("model", tmp);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
 		
 		scale = glm::scale(identityMatrix, glm::vec3(0.5f, 1.0f, 0.1f));
 		translate = glm::translate(identityMatrix, glm::vec3(0.925f, 0.005f, -0.005f));
@@ -463,25 +460,37 @@ int main()
 		shader.setVec3("color", 1.0f, 1.0f, 1.0f);
 		shader.setMat4("model", armc);
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
-		glm::mat4 tmp;
-		//for (int i = 1; i <= 3; i++) {
-		//	rotate = glm::rotate(identityMatrix, glm::radians(i*90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//	
-		//	//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
-		//	//arm = translate * rotate * arm;
-		//	tmp = rotate * arm;
-		//	shader.setVec3("color", 0.0f, 0.0f, 0.4f);
-		//	shader.setMat4("model", tmp);
-		//	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
+		
+		translate = glm::translate(identityMatrix, glm::vec3(0.0f, 0.0f, -0.2f));
+		tmp = translate * armc;
+		shader.setMat4("model", tmp);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
 
-		//	rotate = glm::rotate(identityMatrix, glm::radians(i*90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//	//translate = glm::translate(identityMatrix, glm::vec3(0.1f, 0.0f, 0.0f));
-		//	//armc = translate * rotate * armc;
-		//	tmp = rotate * armc;
-		//	shader.setVec3("color", 1.0f, 1.0f, 1.0f);
-		//	shader.setMat4("model", tmp);
-		//	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
-		//}
+		shader.setVec3("color", 0.0f, 0.0f, 0.4f);
+		rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(1.9f, 0.0f, 1.8f));		
+		tmp = translate * rotate * arm;		
+		shader.setMat4("model", tmp);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
+
+		rotate = glm::rotate(identityMatrix, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(1.83f, 0.0f, -1.93f));		
+		tmp = translate * rotate * arm;		
+		shader.setMat4("model", tmp);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm
+
+		rotate = glm::rotate(identityMatrix, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		translate = glm::translate(identityMatrix, glm::vec3(1.9f, 0.0f, 1.8f));		
+		tmp = translate * rotate * armc;
+		shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+		shader.setMat4("model", tmp);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
+
+		translate = glm::translate(identityMatrix, glm::vec3(-0.15f, 0.0f, 0.0f));
+		tmp = translate * tmp;
+		shader.setVec3("color", 1.0f, 1.0f, 1.0f);
+		shader.setMat4("model", tmp);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0); // fan arm-center connector
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -547,122 +556,4 @@ void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
 	lastX = xpos;
 	lastY = ypos;
-
-	//cout << "pitch and yaw :: sending to class method :: " << xoffset << " " << yoffset << "\n";
-	//camera.ProcessMouseMovement(xoffset, yoffset);
-
-	//float sensitivity = 0.1f; // change this value to your liking
-	//xoffset *= sensitivity;
-	//yoffset *= sensitivity;
-
-	//yaw += xoffset;
-	//pitch += yoffset;
-
-	//// make sure that when pitch is out of bounds, screen doesn't get flipped
-	//if (pitch > 89.0f)
-	//	pitch = 89.0f;
-	//if (pitch < -89.0f)
-	//	pitch = -89.0f;
-
-	//glm::vec3 front;
-	//front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	//front.y = sin(glm::radians(pitch));
-	//front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	//cameraFront = glm::normalize(front);
-	/*return;*/
 }
-
-
-
-
-//float vertices[] = {
-//		-0.5f, -0.5f, -0.5f,
-//		 0.5f, -0.5f, -0.5f,
-//		 0.5f,  0.5f, -0.5f,
-//		 0.5f,  0.5f, -0.5f,
-//		-0.5f,  0.5f, -0.5f,
-//		-0.5f, -0.5f, -0.5f,
-//
-//		-0.5f, -0.5f,  0.5f,
-//		 0.5f, -0.5f,  0.5f,
-//		 0.5f,  0.5f,  0.5f,
-//		 0.5f,  0.5f,  0.5f,
-//		-0.5f,  0.5f,  0.5f,
-//		-0.5f, -0.5f,  0.5f,
-//
-//		-0.5f,  0.5f,  0.5f,
-//		-0.5f,  0.5f, -0.5f,
-//		-0.5f, -0.5f, -0.5f,
-//		-0.5f, -0.5f, -0.5f,
-//		-0.5f, -0.5f,  0.5f,
-//		-0.5f,  0.5f,  0.5f,
-//
-//		 0.5f,  0.5f,  0.5f,
-//		 0.5f,  0.5f, -0.5f,
-//		 0.5f, -0.5f, -0.5f,
-//		 0.5f, -0.5f, -0.5f,
-//		 0.5f, -0.5f,  0.5f,
-//		 0.5f,  0.5f,  0.5f,
-//
-//		-0.5f, -0.5f, -0.5f,
-//		 0.5f, -0.5f, -0.5f,
-//		 0.5f, -0.5f,  0.5f,
-//		 0.5f, -0.5f,  0.5f,
-//		-0.5f, -0.5f,  0.5f,
-//		-0.5f, -0.5f, -0.5f,
-//
-//		-0.5f,  0.5f, -0.5f,
-//		 0.5f,  0.5f, -0.5f,
-//		 0.5f,  0.5f,  0.5f,
-//		 0.5f,  0.5f,  0.5f,
-//		-0.5f,  0.5f,  0.5f,
-//		-0.5f,  0.5f, -0.5f,
-//};
-
-//float vertices[] = {
-//		-0.5f, -0.5f, -0.5f,  
-//		 0.5f, -0.5f, -0.5f,  
-//		 0.5f,  0.5f, -0.5f,  
-//		 0.5f,  0.5f, -0.5f,  
-//		-0.5f,  0.5f, -0.5f,  
-//		-0.5f, -0.5f, -0.5f,  
-//
-//		-0.5f, -0.5f,  0.5f,  
-//		 0.5f, -0.5f,  0.5f,  
-//		 0.5f,  0.5f,  0.5f, 
-//		 0.5f,  0.5f,  0.5f, 
-//		-0.5f,  0.5f,  0.5f,  
-//		-0.5f, -0.5f,  0.5f,  
-//
-//		-0.5f,  0.5f,  0.5f,  
-//		-0.5f,  0.5f, -0.5f,  
-//		-0.5f, -0.5f, -0.5f,  
-//		-0.5f, -0.5f, -0.5f,  
-//		-0.5f, -0.5f,  0.5f,  
-//		-0.5f,  0.5f,  0.5f,  
-//
-//		 0.5f,  0.5f,  0.5f,  
-//		 0.5f,  0.5f, -0.5f,  
-//		 0.5f, -0.5f, -0.5f,  
-//		 0.5f, -0.5f, -0.5f,  
-//		 0.5f, -0.5f,  0.5f,  
-//		 0.5f,  0.5f,  0.5f,  
-//
-//		-0.5f, -0.5f, -0.5f,  
-//		 0.5f, -0.5f, -0.5f,  
-//		 0.5f, -0.5f,  0.5f,  
-//		 0.5f, -0.5f,  0.5f,  
-//		-0.5f, -0.5f,  0.5f, 
-//		-0.5f, -0.5f, -0.5f,  
-//
-//		-0.5f,  0.5f, -0.5f,  
-//		 0.5f,  0.5f, -0.5f, 
-//		 0.5f,  0.5f,  0.5f,  
-//		 0.5f,  0.5f,  0.5f, 
-//		-0.5f,  0.5f,  0.5f, 
-//		-0.5f,  0.5f, -0.5f,  
-//};;
-//unsigned int indices[] = {
-//		0, 1, 3, // first triangle
-//		1, 2, 3  // second triangle
-//	};
