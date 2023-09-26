@@ -27,6 +27,7 @@ const float ROLL = -90.0f;
 const float SPEED = 2.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
+bool isOrbiting = false;
 
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
@@ -34,10 +35,10 @@ class Camera
 {
 public:
     // camera Attributes
-    glm::vec3 Position;
-    glm::vec3 Front;
-    glm::vec3 Up;
-    glm::vec3 Right;
+    glm::vec3 Position, Position_init, Position_orbit;
+    glm::vec3 Front, Front_init;
+    glm::vec3 Up, Up_orbit;
+    glm::vec3 Right, Right_orbit;
     glm::vec3 WorldUp;
     // euler Angles
     float Yaw;
@@ -56,6 +57,8 @@ public:
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = position;
+        Position_init = position;
+        Front_init = Front;
         WorldUp = up;
         Yaw = yaw;
         Pitch = pitch;
@@ -66,6 +69,8 @@ public:
     Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
     {
         Position = glm::vec3(posX, posY, posZ);
+        Position_init = glm::vec3(posX, posY, posZ);
+        Front_init = Front;
         WorldUp = glm::vec3(upX, upY, upZ);
         Yaw = yaw;
         Pitch = pitch;
@@ -75,7 +80,7 @@ public:
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()
     {
-        return glm::lookAt(Position, Position + Front, Up);
+        return glm::lookAt(Position, Position + Front, Up);        
     }
 
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
@@ -126,6 +131,33 @@ public:
         front.z = cos(glm::radians(Pitch2)) * sin(glm::radians(Roll2));
         Front = glm::normalize(front);
         Right = glm::normalize(glm::cross(Front, WorldUp)); 
+        Up = glm::normalize(glm::cross(Right, Front));
+    }
+
+    void Orbit()
+    {
+       // glm::vec3 center = glm::vec3(Front.x, Front.y - 0.1f, Front.z);
+       // float displacement = center.x * Front.x + center.y * Front.y + center.z * Front.z;
+       // displacement *= cos(glm::radians(10.0f));
+       //// Front.x *= sin(glm::radians(10.0f * MouseSensitivity));
+       // //Front.z *= cos(glm::radians(10.0f * MouseSensitivity));
+       // 
+       // displacement = center.x * Position.x + center.y * Position.y + center.z * Position.z;
+       // displacement *= cos(glm::radians(10.0f));
+       // Position.x *= sin(glm::radians(10.0f * MouseSensitivity));
+       // Position.z *= cos(glm::radians(10.0f * MouseSensitivity));
+
+       // Right = glm::normalize(glm::cross(Front, WorldUp)); 
+       // Up = glm::normalize(glm::cross(Right, Front));
+       
+    }
+
+    void ResetPosition()
+    {
+        isOrbiting = false;
+        Position = Position_init;
+        Front = Front_init;
+        Right = glm::normalize(glm::cross(Front, WorldUp));
         Up = glm::normalize(glm::cross(Right, Front));
     }
 

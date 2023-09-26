@@ -536,7 +536,12 @@ void processInput(GLFWwindow* window)
 	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {		
 		camera.RotateAroundAxis(3, 3.0f);
 	}
-
+	if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) {
+		camera.Orbit();
+	}
+	if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) {
+		camera.ResetPosition();
+	}
 
 }
 
